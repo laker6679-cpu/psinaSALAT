@@ -1,24 +1,55 @@
--- ПУБЛИЧНЫЙ ЗАГРУЗЧИК (этот код ВИДЕН всем)
+--// ПУБЛИЧНЫЙ ЗАГРУЗЧИК FRENDLYHUB
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- ТВОИ ID (кого пускаем)
-local AllowedUsers = {
-    10795177721,  -- твой ID
-    7508375923,   -- ID друга
-    11000050138,  -- ID друга
-}
+-- ////////////////////// НАСТРОЙКИ (ЗАМЕНИ ЭТО) //////////////////////
+local SCRIPT_URL = "https://pastebin.com/raw/WUbEwFRc" -- ЗДЕСЬ ТВОЯ RAW ССЫЛКА
+local SCRIPT_PASSWORD = "053237MkLp"            -- ЗДЕСЬ ТВОЙ ПАРОЛЬ ОТ ПАСТЫ
+-- ////////////////////////////////////////////////////////////////////
 
--- Проверка
-local ok = false
-for _, id in pairs(AllowedUsers) do
-    if LocalPlayer.UserId == id then ok = true break end
+-- HWID Lock (твои ID)
+local AllowedUsers = { 10795177721, 7508375923, 11000050138 }
+
+local function isAllowed()
+    for _, id in pairs(AllowedUsers) do
+        if LocalPlayer.UserId == id then return true end
+    end
+    return false
 end
 
-if not ok then
-    LocalPlayer:Kick("❌ Доступ запрещен")
-    while true do wait(9e9) end
+if not isAllowed() then
+    LocalPlayer:Kick("❌ Access Denied")
+    while true do task.wait(9e9) end
 end
 
--- ССЫЛКА НА ТАЙНЫЙ СКРИПТ (заменишь потом)
-loadstring(game:HttpGet("https://pastebin.com/raw/СЮДА_ВСТАВИТЬ_КОД"))()
+-- Загрузка и расшифровка приватного скрипта
+task.spawn(function()
+    local success, result = pcall(function()
+        -- Запрашиваем запароленную пасту, передавая пароль в заголовках
+        local headers = {
+            ["X-Requested-With"] = "XMLHttpRequest",
+            ["Password"] = SCRIPT_PASSWORD
+        }
+        local response = syn and syn.request or (http and http.request) or request
+        local options = {
+            Url = SCRIPT_URL,
+            Method = "GET",
+            Headers = headers
+        }
+        local result = response(options)
+        
+        if result.StatusCode == 200 then
+            -- Успех: выполняем полученный код
+            loadstring(result.Body)()
+        else
+            warn("Pastebin вернул ошибку: ", result.StatusCode)
+            LocalPlayer:Kick("❌ Не удалось загрузить конфигурацию. Код ошибки: " .. result.StatusCode)
+        end
+    end)
+    
+    if not success then
+        warn("Критическая ошибка: ", result)
+        LocalPlayer:Kick("❌ Ошибка загрузки скрипта. Сообщи разработчику.")
+    end
+end)
