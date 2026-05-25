@@ -14,4 +14,4 @@ if not allowed then
 end
 
 -- ВСТАВЬ СЮДА СВОЮ RAW ССЫЛКУ
-loadstring(game:HttpGet("https://pastebin.com/raw/nL6YeAx2"))()
+loadstring(game:HttpGet("https://pastebin.com/raw/TbyYyari"))()
